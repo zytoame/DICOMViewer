@@ -1,0 +1,3 @@
+D:/VSCode/DICOMViewer/build/CMakeFiles/DICOMViewer.dir
+D:/VSCode/DICOMViewer/build/CMakeFiles/ALL_BUILD.dir
+D:/VSCode/DICOMViewer/build/CMakeFiles/ZERO_CHECK.dir

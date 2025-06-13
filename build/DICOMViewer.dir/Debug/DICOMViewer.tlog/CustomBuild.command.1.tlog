@@ -1,0 +1,10 @@
+^D:\VSCODE\DICOMVIEWER\CMAKELISTS.TXT
+setlocal
+D:\cmake-3.26.4-windows-x86_64\bin\cmake.exe -SD:/VSCode/DICOMViewer -BD:/VSCode/DICOMViewer/build --check-stamp-file D:/VSCode/DICOMViewer/build/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

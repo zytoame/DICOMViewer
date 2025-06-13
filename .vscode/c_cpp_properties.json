@@ -1,0 +1,22 @@
+{
+    "configurations": [
+        {
+            "name": "Win64",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "D:/Qt5.15.2/5.15.2/msvc2019_64/include/**"
+                //"${workspaceFolder}/build" // 用于找到自动生成的ui_*.h文件
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE"
+            ],
+            "windowsSdkVersion": "10.0.19041.0",
+            "compilerPath": "cl.exe",
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "windows-msvc-x64"
+        }
+    ],
+    "version": 4
+}
