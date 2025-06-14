@@ -74,12 +74,13 @@ make
 
 ```
 dicom-viewer/
-├── CMakeLists.txt          # Main CMake configuration
-├── main.cpp               # Program entry
-├── mainwindow.h/cpp       # Main window implementation
-├── README.md              # Project documentation
-└── resources/             # Resource files
-    └── icons/             # Icon resources
+├── CMakeLists.txt         
+├── README.md              
+├── README_CN.md           
+├── build/                 
+├── src/                  
+    ├── main.cpp              
+    └── mainwindow.h/cpp       
 ```
 
 ## Usage Guide
