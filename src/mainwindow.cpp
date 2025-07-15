@@ -44,22 +44,24 @@ void MainWindow::setupUI() {
     setCentralWidget(centralWidget);
     QGridLayout *mainLayout = new QGridLayout(centralWidget);
 
-    // --- 控制面板 ---
-    QVBoxLayout *controlsLayout = new QVBoxLayout();
-    openButton = new QPushButton("打开 DICOM 文件夹");
-    controlsLayout->addWidget(openButton);
-
-    // 3D 不透明度控制 (示例)
-    controlsLayout->addWidget(new QLabel("3D 不透明度:"));
-    opacitySlider3D = new QSlider(Qt::Horizontal);
-    opacitySlider3D->setRange(0, 100); // 0-1.0 映射到 0-100
-    opacitySlider3D->setValue(30); // 默认值
-    controlsLayout->addWidget(opacitySlider3D);
-    controlsLayout->addStretch(); // 底部添加伸缩
+    // --- 创建菜单栏 ---
+    menuBar = new QMenuBar(this);
+    fileMenu = new QMenu("文件(&F)", menuBar);
+    openDICOMAction = new QAction("打开 DICOM 文件夹", this);
+    fileMenu->addAction(openDICOMAction);
+    menuBar->addMenu(fileMenu);
+    this->setMenuBar(menuBar);
 
     // --- 渲染窗口 ---
     // 3D 视图
     qvtkWidget3D = new QVTKOpenGLNativeWidget();
+    opacityLabel = new QLabel("3D 不透明度:");
+    opacitySlider3D = new QSlider(Qt::Horizontal);
+    opacitySlider3D->setRange(0, 100); // 0-1.0 映射到 0-100
+    opacitySlider3D->setValue(30); // 默认值
+    opacityLabel->setFixedHeight(20); // 设置固定高度
+    opacityLabel->setAlignment(Qt::AlignCenter); // 文字居中
+   
     // 切片视图
     qvtkWidgetAxial = new QVTKOpenGLNativeWidget();
     axialLabel = new QLabel("轴状位 (Axial): N/A");
@@ -94,19 +96,18 @@ void MainWindow::setupUI() {
     coronalLayout->addWidget(coronalSlider);
 
     // --- 布局安排 ---
-    // 左边控制，右边上部3D，下部三个切片视图
-    mainLayout->addLayout(controlsLayout, 0, 0, 2, 1); // 控制面板占两行一列
-    mainLayout->addWidget(qvtkWidget3D, 0, 1);       // 3D视图在右上
-
+    // 上部3D,和不透明度滑块，下部三个切片视图
     QGridLayout *sliceViewsLayout = new QGridLayout();
     sliceViewsLayout->addLayout(axialLayout, 0, 0);
     sliceViewsLayout->addLayout(sagittalLayout, 0, 1);
     sliceViewsLayout->addLayout(coronalLayout, 0, 2);
-    mainLayout->addLayout(sliceViewsLayout, 1, 1); // 切片视图在右下
+    //mainLayout->addLayout(sliceViewsLayout, 1, 1); // 切片视图在右下
 
-    mainLayout->setColumnStretch(1, 3); // 让渲染区域占据更多空间
-    mainLayout->setRowStretch(0, 3);    // 3D视图
-    mainLayout->setRowStretch(1, 2);    // 切片视图区域
+    // 主布局
+    mainLayout->addWidget(qvtkWidget3D, 0, 0, 2, 3);
+    mainLayout->addWidget(opacityLabel, 2, 0, 1, 3);
+    mainLayout->addWidget(opacitySlider3D, 3, 0, 1, 3);
+    mainLayout->addLayout(sliceViewsLayout, 4, 0, 1, 3);
 }
 
 void MainWindow::initializeVTK() {
@@ -156,39 +157,50 @@ void MainWindow::initializeVTK() {
     }
 }
 
+// 为体绘制设置颜色和不透明度传输函数
 void MainWindow::setupVTKColorAndOpacity() {
-    // 为体绘制设置颜色和不透明度传输函数
-    // 这是一个非常基础的示例，你可能需要根据图像数据进行调整
     // 通常CT数据，骨骼是高密度值，软组织是中低密度值
-
-    // 不透明度函数 (Opacity Transfer Function - OTF)
-    // vtkPiecewiseFunction *opacityTransferFunction = vtkPiecewiseFunction::New();
     opacityTransferFunction->AddPoint(0,    0.0); // 完全透明
-    opacityTransferFunction->AddPoint(500,  0.15); // 假设这是软组织开始显现的值
+    opacityTransferFunction->AddPoint(500,  0.15); // 这是软组织开始显现的值
     opacityTransferFunction->AddPoint(1000, 0.3);
-    opacityTransferFunction->AddPoint(1150, 0.5);  // 假设这是骨骼开始显现的值
+    opacityTransferFunction->AddPoint(1150, 0.5);  // 这是骨骼开始显现的值
     opacityTransferFunction->AddPoint(2000, 0.8);
 
     // 颜色传输函数 (Color Transfer Function - CTF)
-    // vtkColorTransferFunction *colorTransferFunction = vtkColorTransferFunction::New();
     vtkSmartPointer<vtkNamedColors> colors = vtkSmartPointer<vtkNamedColors>::New();
-    colorTransferFunction->AddRGBPoint(0,    colors->GetColor3d("Black").GetRed(), colors->GetColor3d("Black").GetGreen(), colors->GetColor3d("Black").GetBlue());
-    colorTransferFunction->AddRGBPoint(500,  colors->GetColor3d("Brown").GetRed() * 0.5, colors->GetColor3d("Brown").GetGreen() * 0.5, colors->GetColor3d("Brown").GetBlue() * 0.5);
-    colorTransferFunction->AddRGBPoint(1000, colors->GetColor3d("Ivory").GetRed() * 0.8, colors->GetColor3d("Ivory").GetGreen() * 0.8, colors->GetColor3d("Ivory").GetBlue() * 0.8);
-    colorTransferFunction->AddRGBPoint(1150, colors->GetColor3d("White").GetRed(), colors->GetColor3d("White").GetGreen(), colors->GetColor3d("White").GetBlue());
-
-    volumeProperty->SetColor(colorTransferFunction);
-    volumeProperty->SetScalarOpacity(opacityTransferFunction);
+    colorTransferFunction->AddRGBPoint(0,    
+                                        colors->GetColor3d("Black").GetRed(), 
+                                        colors->GetColor3d("Black").GetGreen(), 
+                                        colors->GetColor3d("Black").GetBlue()
+                                        ); // 完全透明对应黑色
+    colorTransferFunction->AddRGBPoint(500,  
+                                        colors->GetColor3d("Brown").GetRed() * 0.5, 
+                                        colors->GetColor3d("Brown").GetGreen() * 0.5, 
+                                        colors->GetColor3d("Brown").GetBlue() * 0.5
+                                        ); // 软组织颜色
+    colorTransferFunction->AddRGBPoint(1000, 
+                                        colors->GetColor3d("Ivory").GetRed() * 0.8, 
+                                        colors->GetColor3d("Ivory").GetGreen() * 0.8, 
+                                        colors->GetColor3d("Ivory").GetBlue() * 0.8
+                                        ); // 中等密度组织颜色
+    colorTransferFunction->AddRGBPoint(1150, 
+                                        colors->GetColor3d("White").GetRed(), 
+                                        colors->GetColor3d("White").GetGreen(), 
+                                        colors->GetColor3d("White").GetBlue()
+                                        ); // 骨骼颜色
+    volumeProperty->SetColor(colorTransferFunction);// 设置颜色传输函数
+    volumeProperty->SetScalarOpacity(opacityTransferFunction);// 设置不透明度传输函数
     volumeProperty->SetInterpolationTypeToLinear(); // 线性插值
     volumeProperty->ShadeOn(); // 开启阴影
-    volumeProperty->SetAmbient(0.4);
-    volumeProperty->SetDiffuse(0.6);
-    volumeProperty->SetSpecular(0.2);
+    volumeProperty->SetAmbient(0.4);// 环境光
+    volumeProperty->SetDiffuse(0.6);// 漫反射
+    volumeProperty->SetSpecular(0.2);// 镜面反射
 }
 
+// 设置三维重建视图的渲染器和交互样式
 void MainWindow::setup3DView() {
     // 设置渲染器背景色等
-    renderer3D->SetBackground(0.1, 0.2, 0.3); // 深蓝色背景
+    renderer3D->SetBackground(0.1, 0.2, 0.4); // 深蓝色背景
 
     // 将渲染器添加到QVTK部件的渲染窗口
     qvtkWidget3D->renderWindow()->AddRenderer(renderer3D);
@@ -199,6 +211,9 @@ void MainWindow::setup3DView() {
     // 设置体绘制映射器
     volumeMapper->SetBlendModeToComposite(); // 混合模式
     volumeMapper->SetInputConnection(dicomReader->GetOutputPort()); // 数据源在打开文件后设置
+    //性能优化
+    volumeMapper->SetUseJittering(1); // 使用抖动来减少体绘制的锯齿，减少伪影
+    volumeMapper->SetSampleDistance(0.5); // 采样距离，控制体绘制的细节，平衡精度
 
     // 设置体素
     volume->SetMapper(volumeMapper);
@@ -211,15 +226,12 @@ void MainWindow::setup3DView() {
     orientationMarkerWidget3D->SetViewport(0.0, 0.0, 0.2, 0.2); // 右下角，20%大小
     orientationMarkerWidget3D->SetEnabled(1);
     orientationMarkerWidget3D->InteractiveOff();
-
-
-    // 初始时不添加 volume，等待数据加载
-    // renderer3D->AddVolume(volume);
 }
 
+// 设置切片视图的渲染器和交互样式
 void MainWindow::setupSliceViews() {
     // --- Axial View 轴向面 ---
-    rendererAxial->SetBackground(0.1, 0.2, 0.2);
+    rendererAxial->SetBackground(0.1, 0.2, 0.4);
     qvtkWidgetAxial->renderWindow()->AddRenderer(rendererAxial);// 添加渲染器到QVTK部件
 
     // 设置轴向视图相机
@@ -232,17 +244,15 @@ void MainWindow::setupSliceViews() {
     actorAxial->GetMapper()->SetInputConnection(wlAxial->GetOutputPort()); // vtkImageActor内部有自己的mapper
     rendererAxial->AddActor(actorAxial);
     qvtkWidgetAxial->renderWindow()->GetInteractor()->SetInteractorStyle(styleAxial);
-
     updateSliceViewport(rendererAxial, actorAxial); 
 
     // --- Sagittal View 矢状面 ---
-    rendererSagittal->SetBackground(0.1, 0.2, 0.2);
+    rendererSagittal->SetBackground(0.1, 0.2, 0.4);
     qvtkWidgetSagittal->renderWindow()->AddRenderer(rendererSagittal);
 
     // 设置矢状视图相机
     sagittalCam = rendererSagittal->GetActiveCamera();
     sagittalCam->ParallelProjectionOn();
-    sagittalCam->Zoom(2.0); // 放大视图无用
     rendererSagittal->SetActiveCamera(sagittalCam);
 
     setupReslice(resliceSagittal, SAGITTAL_ORIENTATION);
@@ -250,10 +260,9 @@ void MainWindow::setupSliceViews() {
     actorSagittal->GetMapper()->SetInputConnection(wlSagittal->GetOutputPort());
     rendererSagittal->AddActor(actorSagittal);
     qvtkWidgetSagittal->renderWindow()->GetInteractor()->SetInteractorStyle(styleSagittal);
-    
 
     // --- Coronal View 冠状面 ---
-    rendererCoronal->SetBackground(0.1, 0.2, 0.2);
+    rendererCoronal->SetBackground(0.1, 0.2, 0.4);
     qvtkWidgetCoronal->renderWindow()->AddRenderer(rendererCoronal);
 
     // 设置冠状视图相机
@@ -268,6 +277,7 @@ void MainWindow::setupSliceViews() {
     qvtkWidgetCoronal->renderWindow()->GetInteractor()->SetInteractorStyle(styleCoronal);
 }
 
+// 设置切片重采样器的矩阵
 void MainWindow::setupReslice(vtkSmartPointer<vtkImageReslice> reslice, int orientation) {
     reslice->SetInputConnection(dicomReader->GetOutputPort()); // 数据加载后设置
     reslice->SetOutputDimensionality(2); // 输出二维图像
@@ -281,7 +291,7 @@ void MainWindow::setupReslice(vtkSmartPointer<vtkImageReslice> reslice, int orie
 
     vtkSmartPointer<vtkMatrix4x4> matrix = vtkSmartPointer<vtkMatrix4x4>::New();
     matrix->Identity(); // Start with identity
-
+    // 设置切片方向矩阵
     switch (orientation) {
         case AXIAL_ORIENTATION: // Z-slice (X-Y plane) 默认矩阵就是这个方向: X = (1,0,0), Y = (0,1,0), Z = (0,0,1)
             break;
@@ -298,9 +308,6 @@ void MainWindow::setupReslice(vtkSmartPointer<vtkImageReslice> reslice, int orie
          break;
         case CORONAL_ORIENTATION: // Y-slice (X-Z plane)
         {
-            // Slice X-axis maps to Volume X-axis
-            // Slice Y-axis maps to Volume Z-axis
-            // Slice Z-axis maps to Volume Y-axis (normal to slice)
             double corMatElements[16] = {
                 1, 0, 0, 0,
                 0, 0, 1, 0,
@@ -308,15 +315,15 @@ void MainWindow::setupReslice(vtkSmartPointer<vtkImageReslice> reslice, int orie
                 0, 0, 0, 1
             };
             matrix->DeepCopy(corMatElements);
-            
-            }
-            break;
+        }
+        break;
     }
     reslice->SetResliceAxes(matrix);
 }
 
+// 连接信号和槽
 void MainWindow::connectSignalsSlots() {
-    connect(openButton, &QPushButton::clicked, this, &MainWindow::openDICOMFolder);
+    connect(openDICOMAction, &QAction::triggered, this, &MainWindow::openDICOMFolder);
     connect(opacitySlider3D, &QSlider::valueChanged, this, &MainWindow::update3DOpacity);
 
     connect(axialSlider, &QSlider::valueChanged, this, &MainWindow::updateAxialSlice);
@@ -324,6 +331,7 @@ void MainWindow::connectSignalsSlots() {
     connect(coronalSlider, &QSlider::valueChanged, this, &MainWindow::updateCoronalSlice);
 }
 
+// 打开DICOM文件夹并加载数据
 void MainWindow::openDICOMFolder() {
     //QMessageBox::information(this, "调试信息", "已点击加载DICOM文件按钮！");
     QString dirPath = QFileDialog::getExistingDirectory(
@@ -392,8 +400,6 @@ void MainWindow::openDICOMFolder() {
         // 更新所有视图，感觉有没有都不影响
         updateAxialSlice(axialSlider->value());
         updateSliceViewport(rendererAxial, actorAxial);
-        //updateSagittalSlice(sagittalSlider->value());
-        //updateSliceViewport(rendererSagittal, actorSagittal);
         updateCoronalSlice(coronalSlider->value());
 
         // 重置并应用相机设置
@@ -425,6 +431,7 @@ void MainWindow::openDICOMFolder() {
     }
 }
 
+// 更新切片的最小最大值
 void MainWindow::updateSliceLimits() {
     if (!loadedImageData) return;
 
@@ -446,6 +453,7 @@ void MainWindow::updateSliceLimits() {
     coronalSlider->setValue((coronalSliceMin + coronalSliceMax) / 2);
 }
 
+// 更新切片Actor的原点和方向
 void MainWindow::updateSliceActor(vtkImageActor* actor, vtkImageReslice* reslice, int slice, int orientation) {
     if (!loadedImageData) return;
 
@@ -488,6 +496,7 @@ void MainWindow::updateSliceActor(vtkImageActor* actor, vtkImageReslice* reslice
     // actor->GetMapper()->Update(); // actor的mapper会自动更新，但有时显式调用有帮助
 }
 
+// 更新3D视图的不透明度
 void MainWindow::update3DOpacity(int value) {
     if (!loadedImageData) return;
     
@@ -506,6 +515,7 @@ void MainWindow::update3DOpacity(int value) {
     qvtkWidget3D->renderWindow()->Render();
 }
 
+// 更新轴状位、矢状位和冠状位的切片
 void MainWindow::updateAxialSlice(int slice) {
     currentAxialSlice = slice;
     axialLabel->setText(QString("轴状位 (Axial): %1/%2").arg(slice).arg(axialSliceMax));
@@ -570,6 +580,7 @@ void MainWindow::updateSliceViewport(vtkRenderer* renderer, vtkImageActor* actor
 
 //未实现
 void MainWindow::resizeEvent(QResizeEvent* event) {
+
     QMainWindow::resizeEvent(event);
     
     if (loadedImageData) {
@@ -584,3 +595,4 @@ void MainWindow::resizeEvent(QResizeEvent* event) {
         qvtkWidgetCoronal->renderWindow()->Render();
     }
 }
+

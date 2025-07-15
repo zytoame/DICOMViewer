@@ -10,6 +10,8 @@
 #include <QDir>
 #include <QFileDialog>
 #include <QApplication>
+#include <QMenuBar>
+#include <QMenu>
 
 // 前向声明 Qt UI 类 (如果使用 Qt Designer 生成 .ui 文件)
 QT_BEGIN_NAMESPACE
@@ -55,7 +57,7 @@ private slots:
 private:
 
     // --- Qt UI 元素
-    QPushButton *openButton;
+    
     QPushButton *loadButton;
     QVTKOpenGLNativeWidget *qvtkWidget3D;
     QVTKOpenGLNativeWidget *qvtkWidgetAxial;
@@ -68,6 +70,11 @@ private:
     QLabel *axialLabel;
     QLabel *sagittalLabel;
     QLabel *coronalLabel;
+    QLabel *opacityLabel; // 用于显示3D不透明度标签
+
+    QMenuBar *menuBar;
+    QMenu *fileMenu;
+    QAction *openDICOMAction;
 
     QSlider *opacitySlider3D; // 示例
 

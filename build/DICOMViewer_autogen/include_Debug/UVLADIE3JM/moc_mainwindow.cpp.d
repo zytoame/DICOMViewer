@@ -104,6 +104,8 @@ D:/VSCode/DICOMViewer/build/DICOMViewer_autogen/include_Debug/UVLADIE3JM/moc_mai
   D:/Qt5.15.2/5.15.2/msvc2019_64/include/QtWidgets/QFileDialog \
   D:/Qt5.15.2/5.15.2/msvc2019_64/include/QtWidgets/QLabel \
   D:/Qt5.15.2/5.15.2/msvc2019_64/include/QtWidgets/QMainWindow \
+  D:/Qt5.15.2/5.15.2/msvc2019_64/include/QtWidgets/QMenu \
+  D:/Qt5.15.2/5.15.2/msvc2019_64/include/QtWidgets/QMenuBar \
   D:/Qt5.15.2/5.15.2/msvc2019_64/include/QtWidgets/QMessageBox \
   D:/Qt5.15.2/5.15.2/msvc2019_64/include/QtWidgets/QOpenGLWidget \
   D:/Qt5.15.2/5.15.2/msvc2019_64/include/QtWidgets/QPushButton \
@@ -113,12 +115,16 @@ D:/VSCode/DICOMViewer/build/DICOMViewer_autogen/include_Debug/UVLADIE3JM/moc_mai
   D:/Qt5.15.2/5.15.2/msvc2019_64/include/QtWidgets/qabstractbutton.h \
   D:/Qt5.15.2/5.15.2/msvc2019_64/include/QtWidgets/qabstractslider.h \
   D:/Qt5.15.2/5.15.2/msvc2019_64/include/QtWidgets/qabstractspinbox.h \
+  D:/Qt5.15.2/5.15.2/msvc2019_64/include/QtWidgets/qaction.h \
+  D:/Qt5.15.2/5.15.2/msvc2019_64/include/QtWidgets/qactiongroup.h \
   D:/Qt5.15.2/5.15.2/msvc2019_64/include/QtWidgets/qapplication.h \
   D:/Qt5.15.2/5.15.2/msvc2019_64/include/QtWidgets/qdialog.h \
   D:/Qt5.15.2/5.15.2/msvc2019_64/include/QtWidgets/qfiledialog.h \
   D:/Qt5.15.2/5.15.2/msvc2019_64/include/QtWidgets/qframe.h \
   D:/Qt5.15.2/5.15.2/msvc2019_64/include/QtWidgets/qlabel.h \
   D:/Qt5.15.2/5.15.2/msvc2019_64/include/QtWidgets/qmainwindow.h \
+  D:/Qt5.15.2/5.15.2/msvc2019_64/include/QtWidgets/qmenu.h \
+  D:/Qt5.15.2/5.15.2/msvc2019_64/include/QtWidgets/qmenubar.h \
   D:/Qt5.15.2/5.15.2/msvc2019_64/include/QtWidgets/qmessagebox.h \
   D:/Qt5.15.2/5.15.2/msvc2019_64/include/QtWidgets/qopenglwidget.h \
   D:/Qt5.15.2/5.15.2/msvc2019_64/include/QtWidgets/qpushbutton.h \
